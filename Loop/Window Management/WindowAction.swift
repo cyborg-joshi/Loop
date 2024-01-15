@@ -284,6 +284,16 @@ extension WindowAction {
             xLocation = (parentWidth / 2) - (previewWidth / 2)
         }
 
+        if let window = window {
+            if self.direction == .larger {
+                xLocation = window.frame.midX - previewWidth / 2
+            }
+
+            if self.direction == .smaller {
+                xLocation = window.frame.midX - previewWidth / 2
+            }
+        }
+
         return xLocation
     }
 
@@ -331,6 +341,16 @@ extension WindowAction {
             yLocation = (parentHeight / 2) - (previewHeight / 2) + yOffset
         }
 
+        if let window = window {
+            if self.direction == .larger {
+                yLocation = window.frame.midY - previewHeight / 2
+            }
+
+            if self.direction == .smaller {
+                yLocation = window.frame.midY - previewHeight / 2
+            }
+        }
+
         return yLocation
     }
 
@@ -348,9 +368,19 @@ extension WindowAction {
             }
         }
 
-        if self.direction == .center || self.direction == .macOSCenter, let window = window {
-            width = window.frame.width
-            width += Defaults[.windowPadding] * 2
+        if let window = window {
+            if self.direction == .center || self.direction == .macOSCenter {
+                width = window.frame.width
+                width += Defaults[.windowPadding] * 2
+            }
+
+            if self.direction == .larger {
+                width = window.frame.width + 25
+            }
+
+            if self.direction == .smaller {
+                width = window.frame.width - 25
+            }
         }
 
         return width
@@ -370,9 +400,19 @@ extension WindowAction {
             }
         }
 
-        if self.direction == .center || self.direction == .macOSCenter, let window = window {
-            height = window.frame.height
-            height += Defaults[.windowPadding] * 2
+        if let window = window {
+            if self.direction == .center || self.direction == .macOSCenter {
+                height = window.frame.height
+                height += Defaults[.windowPadding] * 2
+            }
+
+            if self.direction == .larger {
+                height = window.frame.height + 25
+            }
+
+            if self.direction == .smaller {
+                height = window.frame.height - 25
+            }
         }
 
         return height

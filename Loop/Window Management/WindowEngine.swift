@@ -212,6 +212,10 @@ struct WindowEngine {
             } else {
                 return nil
             }
+        case .larger:
+            newWindowFrame = windowFrame.insetBy(dx: -25, dy: -25)
+        case .smaller:
+            newWindowFrame = windowFrame.insetBy(dx: 25, dy: 25)
         default:
             guard let frameMultiplyValues = direction.frameMultiplyValues else { return nil}
             newWindowFrame.origin.x += screenFrame.width * frameMultiplyValues.minX

@@ -61,12 +61,16 @@ enum WindowDirection: String, CaseIterable, Identifiable, Codable {
     case nextScreen = "NextScreen"
     case previousScreen = "PreviousScreen"
 
+    // Larger/smaller
+    case larger = "Larger"
+    case smaller = "Smaller"
+
     case custom = "Custom"
     case cycle = "Cycle"
 
     // These are used in the menubar resize submenu & keybind configuration
     static var general: [WindowDirection] {
-        [.fullscreen, .maximize, .almostMaximize, .center, .macOSCenter, .minimize, .hide]
+        [.fullscreen, .maximize, .almostMaximize, .center, .macOSCenter, .minimize, .hide, .larger, .smaller]
     }
     static var halves: [WindowDirection] {
         [.topHalf, .bottomHalf, .leftHalf, .rightHalf]
@@ -211,6 +215,9 @@ enum WindowDirection: String, CaseIterable, Identifiable, Codable {
 
         case .nextScreen:               Image("custom.arrow.forward.rectangle")
         case .previousScreen:           Image("custom.arrow.backward.rectangle")
+
+        case .larger:                   Image(systemName: "plus.rectangle")
+        case .smaller:                  Image(systemName: "minus.rectangle")
 
         case .custom:                   Image(systemName: "rectangle.dashed")
         case .cycle:                    Image("custom.arrow.2.squarepath.rectangle")
