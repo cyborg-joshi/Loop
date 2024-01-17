@@ -14,7 +14,7 @@ struct RadialMenuSettingsView: View {
     @Default(.radialMenuThickness) var radialMenuThickness
     @Default(.hideUntilDirectionIsChosen) var hideUntilDirectionIsChosen
 
-    @State var currentResizeDirection: WindowDirection = .cycleTop
+    @State var currentResizeDirection: WindowDirection = .noAction
 
     var body: some View {
         Form {

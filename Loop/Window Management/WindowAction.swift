@@ -36,7 +36,7 @@ struct WindowAction: Codable, Identifiable, Hashable, Equatable, Defaults.Serial
         self.init(direction, keybind: [])
     }
 
-    init(_ cycle: [WindowAction]?) {
+    init(_ cycle: [WindowAction]) {
         self.init(.cycle, keybind: [], cycle: cycle)
     }
 
@@ -57,6 +57,95 @@ struct WindowAction: Codable, Identifiable, Hashable, Equatable, Defaults.Serial
             return keybinding
         }
         return nil
+    }
+
+    /// Alternate equal function. Ignores keybinds and id.
+    /// - Parameter action2: action to compare to
+    /// - Returns: true or false
+    func equalTo(_ action2: WindowAction) -> Bool {
+        if self.direction == .custom {
+            return (self.measureSystem == action2.measureSystem &&
+                    self.anchor == action2.anchor &&
+                    self.width == action2.width &&
+                    self.height == action2.height)
+        }
+
+        if self.direction == .cycle {
+            return self.cycle == action2.cycle
+        }
+
+        return self.direction == action2.direction
+    }
+
+    func frame(_ screenFrame: CGRect) -> CGRect {
+        var result: CGRect = .zero
+
+        if let customFrame = self.generateCustomWindowFrame(screenFrame) {
+            result = customFrame
+        } else {
+            if let frameMultiplyValues = self.direction.frameMultiplyValues {
+                result.origin.x += screenFrame.width * frameMultiplyValues.minX
+                result.origin.y += screenFrame.height * frameMultiplyValues.minY
+                result.size.width += screenFrame.width * frameMultiplyValues.width
+                result.size.height += screenFrame.height * frameMultiplyValues.height
+            }
+        }
+
+        return result
+    }
+
+    private func generateCustomWindowFrame(_ screenFrame: CGRect) -> CGRect? {
+        guard
+            self.direction == .custom,
+            let measureSystem = self.measureSystem,
+            let anchor = self.anchor,
+            let width = self.width,
+            let height = self.height
+        else {
+            return nil
+        }
+        var newWindowFrame: CGRect = .zero
+        newWindowFrame.origin = screenFrame.origin
+
+        switch measureSystem {
+        case .percentage:
+            newWindowFrame.size.width += screenFrame.width * (width / 100.0)
+            newWindowFrame.size.height += screenFrame.height * (height / 100.0)
+        case .pixels:
+            newWindowFrame.size.width += width
+            newWindowFrame.size.height += height
+        }
+
+        switch anchor {
+        case .topLeft:
+            break
+        case .top:
+            newWindowFrame.origin.x = screenFrame.midX - newWindowFrame.width / 2
+        case .topRight:
+            newWindowFrame.origin.x = screenFrame.maxX - newWindowFrame.width
+        case .right:
+            newWindowFrame.origin.x = screenFrame.maxX - newWindowFrame.width
+            newWindowFrame.origin.y = screenFrame.midY - newWindowFrame.height / 2
+        case .bottomRight:
+            newWindowFrame.origin.x = screenFrame.maxX - newWindowFrame.width
+            newWindowFrame.origin.y = screenFrame.maxY - newWindowFrame.height
+        case .bottom:
+            newWindowFrame.origin.x = screenFrame.midX - newWindowFrame.width / 2
+            newWindowFrame.origin.y = screenFrame.maxY - newWindowFrame.height
+        case .bottomLeft:
+            newWindowFrame.origin.y = screenFrame.maxY - newWindowFrame.height
+        case .left:
+            newWindowFrame.origin.y = screenFrame.midY - newWindowFrame.height / 2
+        case .center:
+            newWindowFrame.origin.x = screenFrame.midX - newWindowFrame.width / 2
+            newWindowFrame.origin.y = screenFrame.midY - newWindowFrame.height / 2
+        case .macOSCenter:
+//            let yOffset = getMacOSCenterYOffset(newWindowFrame.height, screenHeight: screenFrame.height)
+            newWindowFrame.origin.x = screenFrame.midX - newWindowFrame.width / 2
+            newWindowFrame.origin.y = (screenFrame.midY - newWindowFrame.height / 2) /*+ yOffset*/
+        }
+
+        return newWindowFrame
     }
 }
 

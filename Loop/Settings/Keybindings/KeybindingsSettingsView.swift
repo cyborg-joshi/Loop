@@ -178,12 +178,6 @@ struct KeybindingsSettingsView: View {
             }
         }
 
-        Menu("Cyclable") {
-            ForEach(WindowDirection.cyclable) { direction in
-                newDirectionButton(direction)
-            }
-        }
-
         Menu("Halves") {
             ForEach(WindowDirection.halves) { direction in
                 newDirectionButton(direction)

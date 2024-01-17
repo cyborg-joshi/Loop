@@ -95,35 +95,37 @@ class LoopManager: ObservableObject {
         self.angleToMouse = mouseAngle
         self.distanceToMouse = mouseDistance
 
-        var resizeDirection: WindowDirection = .noAction
+        var resizeDirection: WindowAction = .init(.noAction)
+
+        let radialMenuSeparationAngle = 360.0 / CGFloat(Defaults[.radialMenuActions].count)
+        let halvedSeparationAngle = radialMenuSeparationAngle / 2
 
         // If mouse over 50 points away, select half or quarter positions
         if distanceToMouse > pow(50 - Defaults[.radialMenuThickness], 2) {
-            switch Int((angleToMouse.normalized().degrees + 22.5) / 45) {
-            case 0, 8: resizeDirection = .cycleRight
-            case 1:    resizeDirection = .bottomRightQuarter
-            case 2:    resizeDirection = .cycleBottom
-            case 3:    resizeDirection = .bottomLeftQuarter
-            case 4:    resizeDirection = .cycleLeft
-            case 5:    resizeDirection = .topLeftQuarter
-            case 6:    resizeDirection = .cycleTop
-            case 7:    resizeDirection = .topRightQuarter
-            default:   resizeDirection = .noAction
-            }
+            let normalizedAngle = (angleToMouse + .degrees(90 + halvedSeparationAngle)).normalized().degrees
+            let index = Int(normalizedAngle / radialMenuSeparationAngle)
+            resizeDirection = Defaults[.radialMenuActions][index]
         } else if distanceToMouse < pow(noActionDistance, 2) {
-            resizeDirection = .noAction
+            resizeDirection = .init(.noAction)
         } else {
-            resizeDirection = .maximize
+            resizeDirection = .init(.maximize)
         }
 
-        if resizeDirection != self.currentAction.direction.base {
-            changeAction(.init(resizeDirection))
+        if resizeDirection.direction == .cycle,
+           let cycle = resizeDirection.cycle,
+           let currentIndex = cycle.firstIndex(of: self.currentAction),
+           cycle[cycle.index(after: currentIndex)] != self.currentAction {
+
+//            print("WONT CHANGE")
+
+        } else {
+            changeAction(resizeDirection)
         }
     }
 
     private func changeAction(_ action: WindowAction) {
         guard
-            self.currentAction != action,
+            !self.currentAction.equalTo(action),
             self.isLoopActive,
             let currentScreen = self.screenToResizeOn
         else {
@@ -136,10 +138,6 @@ class LoopManager: ObservableObject {
         )
 
         var newAction = action
-
-        if newAction.direction.isPresetCyclable {
-            newAction = .init(newAction.direction.nextCyclingDirection(from: self.currentAction.direction))
-        }
 
         if newAction.direction == .cycle {
             if let cycle = action.cycle {
@@ -184,10 +182,13 @@ class LoopManager: ObservableObject {
             if oldscreenToResizeOn != newScreen {
 
                 DispatchQueue.main.async {
-                    Notification.Name.updateUIDirection.post(userInfo: ["action": self.currentAction])
+                    Notification.Name.updateUIDirection.post(
+                        userInfo: ["action": self.currentAction,
+                                   "screenFrame": newScreen.frame]
+                    )
                 }
 
-                if action.direction.isPresetCyclable || action.direction == .cycle {
+                if action.direction == .cycle {
                     self.currentAction = newAction
                     self.changeAction(action)
                 } else {
@@ -216,16 +217,21 @@ class LoopManager: ObservableObject {
             }
 
             DispatchQueue.main.async {
-                Notification.Name.updateUIDirection.post(userInfo: ["action": self.currentAction])
-
-                if let screenToResizeOn = self.screenToResizeOn,
-                   !Defaults[.previewVisibility] {
-                    WindowEngine.resize(
-                        self.targetWindow!,
-                        to: self.currentAction,
-                        on: screenToResizeOn,
-                        supressAnimations: true
+                if let screenToResizeOn = self.screenToResizeOn {
+                    Notification.Name.updateUIDirection.post(
+                        userInfo: ["action": self.currentAction,
+                                   "screenFrame": screenToResizeOn.frame]
                     )
+                   if !Defaults[.previewVisibility] {
+                        WindowEngine.resize(
+                            self.targetWindow!,
+                            to: self.currentAction,
+                            on: screenToResizeOn,
+                            supressAnimations: true
+                        )
+                    }
+                } else {
+                    Notification.Name.updateUIDirection.post(userInfo: ["action": self.currentAction])
                 }
             }
 

@@ -16,7 +16,8 @@ struct RadialMenuView: View {
     // This will determine whether Loop needs to show a warning (if it's nil)
     let frontmostWindow: Window?
 
-    @State var currentAction: WindowDirection = .noAction
+    @State var currentAction: WindowAction = .init(.noAction)
+    @State var screenFrame: CGRect = .zero
 
     @State var previewMode = false
     @State var timer = Timer.publish(every: 0.05, on: .main, in: .common).autoconnect()
@@ -54,7 +55,8 @@ struct RadialMenuView: View {
                             )
                             .mask {
                                 RadialMenuDirectionSelectorView(
-                                    activeAngle: currentAction,
+                                    self.currentAction, 
+                                    screenFrame: self.screenFrame,
                                     size: self.radialMenuSize
                                 )
                             }
@@ -70,15 +72,15 @@ struct RadialMenuView: View {
                         }
                     }
 
-                    Group {
-                        if frontmostWindow == nil && previewMode == false {
-                            Image("custom.macwindow.trianglebadge.exclamationmark")
-                        } else if let image = self.currentAction.radialMenuImage {
-                            image
-                        }
-                    }
-                    .foregroundStyle(Color.getLoopAccent(tone: .normal))
-                    .font(Font.system(size: 20, weight: .bold))
+//                    Group {
+//                        if frontmostWindow == nil && previewMode == false {
+//                            Image("custom.macwindow.trianglebadge.exclamationmark")
+//                        } else if let image = self.currentAction.radialMenuImage {
+//                            image
+//                        }
+//                    }
+//                    .foregroundStyle(Color.getLoopAccent(tone: .normal))
+//                    .font(Font.system(size: 20, weight: .bold))
                 }
                 .frame(width: radialMenuSize, height: radialMenuSize)
 
@@ -89,23 +91,31 @@ struct RadialMenuView: View {
         .shadow(radius: 10)
 
         // Animate window
-        .scaleEffect(currentAction == .maximize ? 0.85 : 1)
+        .scaleEffect(currentAction.direction == .maximize ? 0.85 : 1)
         .animation(animationConfiguration.radialMenuAnimation, value: currentAction)
         .onAppear {
             if previewMode {
-                currentAction = currentAction.nextPreviewDirection
+//                currentAction = currentAction.nextPreviewDirection
             }
         }
         .onReceive(timer) { _ in
             if previewMode {
-                currentAction = currentAction.nextPreviewDirection
+//                currentAction = currentAction.nextPreviewDirection
             }
         }
         .onReceive(.updateUIDirection) { obj in
-            if !self.previewMode, let action = obj.userInfo?["action"] as? WindowAction {
-                self.currentAction = action.direction.base
+            if !self.previewMode {
+                if let action = obj.userInfo?["action"] as? WindowAction {
+                    self.currentAction = action
 
-                print("New radial menu window action recieved: \(action.direction)")
+                    print("New radial menu window action recieved: \(action.direction)")
+                }
+
+                if let screenFrame = obj.userInfo?["screenFrame"] as? CGRect {
+                    self.screenFrame = screenFrame
+
+//                    print("New radial menu window action recieved: \(action.direction)")
+                }
             }
         }
     }

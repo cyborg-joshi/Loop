@@ -223,6 +223,7 @@ struct WindowEngine {
         return newWindowFrame
     }
 
+    // TODO: REMOVE
     private static func generateCustomWindowFrame(_ action: WindowAction, _ screenFrame: CGRect) -> CGRect? {
         guard
             action.direction == .custom,

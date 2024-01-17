@@ -42,13 +42,24 @@ extension Defaults.Keys {
     static let previewPadding = Key<CGFloat>("previewPadding", default: 10)
     static let previewBorderThickness = Key<CGFloat>("previewBorderThickness", default: 5)
 
+    static let radialMenuActions = Key<[WindowAction]>("radialMenu", default: [
+        WindowAction([.init(.topHalf), .init(.topThird), .init(.topTwoThirds)]),
+        WindowAction(.topRightQuarter),
+        WindowAction([.init(.rightHalf), .init(.rightThird), .init(.rightTwoThirds)]),
+        WindowAction(.bottomRightQuarter),
+        WindowAction([.init(.bottomHalf), .init(.bottomThird), .init(.bottomTwoThirds)]),
+        WindowAction(.bottomLeftQuarter),
+        WindowAction([.init(.leftHalf), .init(.leftThird), .init(.leftTwoThirds)]),
+        WindowAction(.topLeftQuarter)
+    ])
+
     static let keybinds = Key<[WindowAction]>("keybinds", default: [
         WindowAction(.maximize, keybind: [.kVK_Space]),
         WindowAction(.center, keybind: [.kVK_Return]),
-        WindowAction(.cycleTop, keybind: [.kVK_UpArrow]),
-        WindowAction(.cycleBottom, keybind: [.kVK_DownArrow]),
-        WindowAction(.cycleLeft, keybind: [.kVK_LeftArrow]),
-        WindowAction(.cycleRight, keybind: [.kVK_RightArrow]),
+//        WindowAction(.cycleTop, keybind: [.kVK_UpArrow]),
+//        WindowAction(.cycleBottom, keybind: [.kVK_DownArrow]),
+//        WindowAction(.cycleLeft, keybind: [.kVK_LeftArrow]),
+//        WindowAction(.cycleRight, keybind: [.kVK_RightArrow]),
 
         WindowAction(.topLeftQuarter, keybind: [.kVK_UpArrow, .kVK_LeftArrow]),
         WindowAction(.topRightQuarter, keybind: [.kVK_UpArrow, .kVK_RightArrow]),
